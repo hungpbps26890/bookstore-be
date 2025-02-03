@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: bookstore
+
+  datasource:
+    url: "jdbc:mysql://localhost:3306/bookstore"
+    username: root
+    password: 123456
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+server:
+  port: 8080
+  servlet:
+    context-path: /v1
