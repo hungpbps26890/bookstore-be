@@ -1,4 +1,4 @@
-package com.dev.bookstore.domain;
+package com.dev.bookstore.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Book {
+public class BookEntity {
     @Id
     private String isbn;
     private String title;
@@ -21,5 +21,5 @@ public class Book {
 
     @ManyToOne
     @JoinColumn(name = "author_id")
-    private Author author;
+    private AuthorEntity author;
 }

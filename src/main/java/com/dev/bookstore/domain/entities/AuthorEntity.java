@@ -1,4 +1,4 @@
-package com.dev.bookstore.domain;
+package com.dev.bookstore.domain.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Author {
+public class AuthorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "author_id_seq")
     private Long id;
@@ -25,5 +25,5 @@ public class Author {
     private String image;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
-    private List<Book> books = new ArrayList<>();
+    private List<BookEntity> books = new ArrayList<>();
 }
