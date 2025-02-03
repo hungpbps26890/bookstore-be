@@ -6,6 +6,8 @@ import com.dev.bookstore.services.AuthorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AuthorServiceImpl implements AuthorService {
@@ -15,5 +17,10 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public AuthorEntity save(AuthorEntity author) {
         return authorRepository.save(author);
+    }
+
+    @Override
+    public List<AuthorEntity> list() {
+        return authorRepository.findAll();
     }
 }

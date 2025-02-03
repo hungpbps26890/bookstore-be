@@ -17,10 +17,12 @@ import java.util.List;
 @Builder
 public class AuthorEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "author_id_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private Integer age;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String image;
 
