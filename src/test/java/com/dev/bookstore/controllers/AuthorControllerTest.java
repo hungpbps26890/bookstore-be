@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +20,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -45,7 +47,7 @@ public class AuthorControllerTest {
 
     @BeforeEach
     public void beforeEach() {
-        Mockito.when(authorService.save(Mockito.any(AuthorEntity.class)))
+        when(authorService.save(any(AuthorEntity.class)))
                 .thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
 
@@ -106,8 +108,8 @@ public class AuthorControllerTest {
 
     @Test
     public void testThatListAuthorsReturnsAuthorsAndHttp200WhenAuthorsInTheDatabase() throws Exception {
-        Mockito.when(authorService.list()).thenReturn(List.of(
-                TestDataUtil.expectedTestAuthorEntity(1L)
+        when(authorService.list()).thenReturn(List.of(
+                TestDataUtil.expectedTestAuthorEntity(null)
         ));
 
         AuthorDto expected = TestDataUtil.expectedTestAuthorDto();
@@ -129,5 +131,40 @@ public class AuthorControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].age").value(expected.getAge()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].image").value(expected.getImage()));
+    }
+
+    @Test
+    public void testThatReadOneAuthorReturnsHTTP404WhenAuthorNotFoundInTheDatabase() throws Exception {
+        when(authorService.get(any())).thenReturn(null);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    public void testThatReadOneAuthorReturnsHTTP200AndAuthorWhenAuthorFoundInTheDatabase() throws Exception {
+        when(authorService.get(any())).thenReturn(TestDataUtil.expectedTestAuthorEntity(999L));
+
+        AuthorDto expected = TestDataUtil.expectedTestAuthorDto();
+        expected.setId(999L);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(expected)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(expected.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(expected.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(expected.getAge()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()));
     }
 }

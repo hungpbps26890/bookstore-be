@@ -61,4 +61,20 @@ public class AuthorServiceImplTest {
 
         assertThat(result).isEqualTo(expected);
     }
+
+    @Test
+    public void testThatGetReturnsNullWhenAuthorNotFoundInTheDatabase() {
+        AuthorEntity result = underTest.get(999L);
+        assertThat(result).isNull();
+    }
+
+    @Transactional
+    @Test
+    public void testThatGetReturnsAuthorWhenAuthorFoundInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+
+        AuthorEntity result = underTest.get(savedAuthor.getId());
+
+        assertThat(result).isEqualTo(savedAuthor);
+    }
 }
