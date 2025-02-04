@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/authors")
@@ -33,5 +34,14 @@ public class AuthorController {
                 .stream()
                 .map(authorMapper::toDto)
                 .toList();
+    }
+
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<AuthorDto> readOneAuthor(@PathVariable("id") Long id) {
+        return Optional.ofNullable(authorService.get(id))
+                .map(foundAuthor ->
+                        new ResponseEntity<>(authorMapper.toDto(foundAuthor), HttpStatus.OK)
+                )
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }

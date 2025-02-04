@@ -129,6 +129,5 @@ public class AuthorControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].age").value(expected.getAge()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].image").value(expected.getImage()));
-        ;
     }
 }
