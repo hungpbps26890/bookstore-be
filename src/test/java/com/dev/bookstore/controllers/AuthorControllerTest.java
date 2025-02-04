@@ -47,7 +47,7 @@ public class AuthorControllerTest {
 
     @BeforeEach
     public void beforeEach() {
-        when(authorService.save(any(AuthorEntity.class)))
+        when(authorService.create(any(AuthorEntity.class)))
                 .thenAnswer(AdditionalAnswers.returnsFirstArg());
     }
 
@@ -92,6 +92,25 @@ public class AuthorControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(expected.getAge()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()));
+    }
+
+    @Test
+    public void testThatCreateAuthorReturnHTTP400WhenIllegalArgumentExceptionIsThrown() throws Exception {
+        when(authorService.create(any())).thenThrow(IllegalArgumentException.class);
+
+        AuthorDto authorDto = TestDataUtil.createTestAuthorDto();
+
+        String content = objectMapper.writeValueAsString(authorDto);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .post(AUTHORS_BASED_URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(content)
+        ).andExpect(
+                MockMvcResultMatchers.status().isBadRequest()
+        );
     }
 
     @Test
@@ -166,5 +185,49 @@ public class AuthorControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(expected.getAge()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()));
+    }
+
+    @Test
+    public void testThatFullUpdateReturnsHTTP200AndUpdatedAuthorOnSuccessfulCall() throws Exception {
+        when(authorService.fullUpdate(any(), any()))
+                .thenAnswer(AdditionalAnswers.returnsSecondArg());
+
+        AuthorDto authorToUpdate = TestDataUtil.updateTestAuthorDto(999L);
+        String content = objectMapper.writeValueAsString(authorToUpdate);
+
+        AuthorDto expected = TestDataUtil.expectedUpdatedTestAuthorDto(999L);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .put(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(content)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(expected)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(expected.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(expected.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(expected.getAge()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()));
+    }
+
+    @Test
+    public void testThatFullUpdateReturnsHTTP400WhenIllegalStateExceptionIsThrown() throws Exception {
+        when(authorService.fullUpdate(any(), any()))
+                .thenThrow(IllegalStateException.class);
+
+        AuthorDto authorToUpdate = TestDataUtil.updateTestAuthorDto(999L);
+        String content = objectMapper.writeValueAsString(authorToUpdate);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .put(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(content)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 }

@@ -27,6 +27,26 @@ public class TestDataUtil {
                 .build();
     }
 
+    public static AuthorDto updateTestAuthorDto(Long id) {
+        return AuthorDto.builder()
+                .id(id)
+                .name("Author Name")
+                .age(30)
+                .description("This is a description.")
+                .image("author-image.jpg")
+                .build();
+    }
+
+    public static AuthorDto expectedUpdatedTestAuthorDto(Long id) {
+        return AuthorDto.builder()
+                .id(id)
+                .name("Author Name")
+                .age(30)
+                .description("This is a description.")
+                .image("author-image.jpg")
+                .build();
+    }
+
     public static AuthorEntity createTestAuthorEntity() {
         return AuthorEntity.builder()
                 .name("Author Name")
@@ -43,6 +63,26 @@ public class TestDataUtil {
                 .age(30)
                 .description("This is a description.")
                 .image("author-image.jpg")
+                .build();
+    }
+
+    public static AuthorEntity updateTestAuthorEntity(Long existingAuthorId) {
+        return AuthorEntity.builder()
+                .id(existingAuthorId)
+                .name("Updated Author Name")
+                .age(60)
+                .description("This is an updated description.")
+                .image("updated-author-image.jpg")
+                .build();
+    }
+
+    public static AuthorEntity expectedUpdateTestAuthorEntity(Long existingAuthorId) {
+        return AuthorEntity.builder()
+                .id(existingAuthorId)
+                .name("Updated Author Name")
+                .age(60)
+                .description("This is an updated description.")
+                .image("updated-author-image.jpg")
                 .build();
     }
 }

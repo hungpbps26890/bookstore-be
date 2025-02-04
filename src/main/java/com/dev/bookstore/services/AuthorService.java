@@ -6,9 +6,11 @@ import java.util.List;
 
 public interface AuthorService {
 
-    AuthorEntity save(AuthorEntity author);
+    AuthorEntity create(AuthorEntity author);
 
     List<AuthorEntity> list();
 
     AuthorEntity get(Long id);
+
+    AuthorEntity fullUpdate(Long id, AuthorEntity author);
 }

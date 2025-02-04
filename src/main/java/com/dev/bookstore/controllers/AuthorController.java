@@ -23,9 +23,13 @@ public class AuthorController {
 
     @PostMapping
     public ResponseEntity<AuthorDto> createAuthor(@RequestBody AuthorDto authorDto) {
-        AuthorEntity authorToCreate = authorMapper.toEntity(authorDto);
-        AuthorDto createdAuthor = authorMapper.toDto(authorService.save(authorToCreate));
-        return new ResponseEntity<>(createdAuthor, HttpStatus.CREATED);
+        try {
+            AuthorEntity authorToCreate = authorMapper.toEntity(authorDto);
+            AuthorDto createdAuthor = authorMapper.toDto(authorService.create(authorToCreate));
+            return new ResponseEntity<>(createdAuthor, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping
@@ -43,5 +47,19 @@ public class AuthorController {
                         new ResponseEntity<>(authorMapper.toDto(foundAuthor), HttpStatus.OK)
                 )
                 .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    }
+
+    @PutMapping(path = "/{id}")
+    public ResponseEntity<AuthorDto> fullUpdateAuthor(
+            @PathVariable("id") Long id,
+            @RequestBody AuthorDto authorDto
+    ) {
+        try {
+            AuthorEntity authorToUpdate = authorMapper.toEntity(authorDto);
+            AuthorEntity updatedAuthor = authorService.fullUpdate(id, authorToUpdate);
+            return new ResponseEntity<>(authorMapper.toDto(updatedAuthor), HttpStatus.OK);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }

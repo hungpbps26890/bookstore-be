@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @SpringBootTest
 public class AuthorServiceImplTest {
@@ -27,8 +28,8 @@ public class AuthorServiceImplTest {
 
     @Transactional
     @Test
-    public void testThatSavePersistsTheAuthorInTheDatabase() {
-        AuthorEntity savedAuthor = underTest.save(TestDataUtil.createTestAuthorEntity());
+    public void testThatCreatePersistsTheAuthorInTheDatabase() {
+        AuthorEntity savedAuthor = underTest.create(TestDataUtil.createTestAuthorEntity());
 
         Long id = savedAuthor.getId();
 
@@ -41,6 +42,17 @@ public class AuthorServiceImplTest {
         AuthorEntity recalledAuthor = authorRepository.findById(id).orElse(null);
         assertThat(recalledAuthor).isNotNull();
         assertThat(recalledAuthor).isEqualTo(expected);
+    }
+
+    @Test
+    public void testThatCreateAuthorWithIdThrowsAnIllegalArgumentException() {
+        assertThatThrownBy(() -> {
+            AuthorEntity existingAuthor = TestDataUtil.createTestAuthorEntity();
+            existingAuthor.setId(999L);
+
+            underTest.create(existingAuthor);
+        }).isInstanceOf(IllegalArgumentException.class);
+
     }
 
     @Test
@@ -76,5 +88,34 @@ public class AuthorServiceImplTest {
         AuthorEntity result = underTest.get(savedAuthor.getId());
 
         assertThat(result).isEqualTo(savedAuthor);
+    }
+
+    @Transactional
+    @Test
+    public void testThatFullUpdateSuccessfulUpdatesTheAuthorInDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        Long existingAuthorId = savedAuthor.getId();
+
+        AuthorEntity authorToUpdate = TestDataUtil.updateTestAuthorEntity(existingAuthorId);
+
+        AuthorEntity result = underTest.fullUpdate(existingAuthorId, authorToUpdate);
+
+        AuthorEntity expected = TestDataUtil.expectedUpdateTestAuthorEntity(existingAuthorId);
+
+        assertThat(result).isEqualTo(expected);
+
+        AuthorEntity recalledAuthor = authorRepository.findById(existingAuthorId).orElse(null);
+        assertThat(recalledAuthor).isNotNull();
+        assertThat(recalledAuthor).isEqualTo(expected);
+    }
+
+    @Test
+    public void testThatFullUpdateThrowsIllegalStateExceptionWhenAuthorNotFoundInTheDatabase() {
+        assertThatThrownBy(() -> {
+            Long nonExistingAuthorId = 999L;
+            AuthorEntity authorToUpdate = TestDataUtil.updateTestAuthorEntity(nonExistingAuthorId);
+
+            underTest.fullUpdate(nonExistingAuthorId, authorToUpdate);
+        }).isInstanceOf(IllegalStateException.class);
     }
 }
