@@ -6,6 +6,9 @@ import com.dev.bookstore.repositories.AuthorRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,6 +25,7 @@ public class AuthorServiceImplTest {
         this.authorRepository = authorRepository;
     }
 
+    @Transactional
     @Test
     public void testThatSavePersistsTheAuthorInTheDatabase() {
         AuthorEntity savedAuthor = underTest.save(TestDataUtil.createTestAuthorEntity());
@@ -30,9 +34,31 @@ public class AuthorServiceImplTest {
 
         assertThat(id).isNotNull();
 
-        assertThat(savedAuthor).isEqualTo(TestDataUtil.expectedTestAuthorEntity(id));
+        AuthorEntity expected = TestDataUtil.expectedTestAuthorEntity(id);
+
+        assertThat(savedAuthor).isEqualTo(expected);
 
         AuthorEntity recalledAuthor = authorRepository.findById(id).orElse(null);
         assertThat(recalledAuthor).isNotNull();
+        assertThat(recalledAuthor).isEqualTo(expected);
+    }
+
+    @Test
+    public void testThatListReturnsEmptyListWhenNoAuthorsInTheDatabase() {
+        List<AuthorEntity> result = underTest.list();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Transactional
+    @Test
+    public void testThatListReturnsAuthorsWhenAuthorsInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+
+        List<AuthorEntity> expected = List.of(savedAuthor);
+
+        List<AuthorEntity> result = underTest.list();
+
+        assertThat(result).isEqualTo(expected);
     }
 }

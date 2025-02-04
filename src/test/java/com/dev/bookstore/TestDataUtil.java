@@ -9,6 +9,7 @@ public class TestDataUtil {
 
     public static AuthorDto createTestAuthorDto() {
         return AuthorDto.builder()
+                .id(null)
                 .name("Author Name")
                 .age(30)
                 .description("This is a description.")
@@ -18,7 +19,7 @@ public class TestDataUtil {
 
     public static AuthorDto expectedTestAuthorDto() {
         return AuthorDto.builder()
-                .id(1L)
+                .id(null)
                 .name("Author Name")
                 .age(30)
                 .description("This is a description.")
