@@ -2,6 +2,7 @@ package com.dev.bookstore.mappers.impl;
 
 import com.dev.bookstore.domain.dto.AuthorDto;
 import com.dev.bookstore.domain.entities.AuthorEntity;
+import com.dev.bookstore.domain.requests.AuthorUpdateRequest;
 import com.dev.bookstore.mappers.Mapper;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,5 +22,9 @@ public class AuthorMapper implements Mapper<AuthorEntity, AuthorDto> {
     @Override
     public AuthorEntity toEntity(AuthorDto dto) {
         return modelMapper.map(dto, AuthorEntity.class);
+    }
+
+    public AuthorUpdateRequest toUpdateRequest(AuthorDto dto) {
+        return modelMapper.map(dto, AuthorUpdateRequest.class);
     }
 }

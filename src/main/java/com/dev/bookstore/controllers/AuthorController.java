@@ -2,6 +2,7 @@ package com.dev.bookstore.controllers;
 
 import com.dev.bookstore.domain.dto.AuthorDto;
 import com.dev.bookstore.domain.entities.AuthorEntity;
+import com.dev.bookstore.domain.requests.AuthorUpdateRequest;
 import com.dev.bookstore.mappers.impl.AuthorMapper;
 import com.dev.bookstore.services.AuthorService;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,21 @@ public class AuthorController {
         try {
             AuthorEntity authorToUpdate = authorMapper.toEntity(authorDto);
             AuthorEntity updatedAuthor = authorService.fullUpdate(id, authorToUpdate);
+            return new ResponseEntity<>(authorMapper.toDto(updatedAuthor), HttpStatus.OK);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PatchMapping(path = "/{id}")
+    public ResponseEntity<AuthorDto> partialUpdateAuthor(
+            @PathVariable("id") Long id,
+            @RequestBody AuthorDto authorDto
+    ) {
+        try {
+            AuthorUpdateRequest request = authorMapper.toUpdateRequest(authorDto);
+            AuthorEntity updatedAuthor = authorService.partialUpdate(id, request);
+
             return new ResponseEntity<>(authorMapper.toDto(updatedAuthor), HttpStatus.OK);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
