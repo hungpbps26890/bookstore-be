@@ -1,7 +1,9 @@
 package com.dev.bookstore.services.impl;
 
 import com.dev.bookstore.TestDataUtil;
+import com.dev.bookstore.domain.dto.AuthorDto;
 import com.dev.bookstore.domain.entities.AuthorEntity;
+import com.dev.bookstore.domain.requests.AuthorUpdateRequest;
 import com.dev.bookstore.repositories.AuthorRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,5 +119,150 @@ public class AuthorServiceImplTest {
 
             underTest.fullUpdate(nonExistingAuthorId, authorToUpdate);
         }).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void testThatPartialUpdateThrowsIllegalStateExceptionWhenAuthorNotFoundInTheDatabase() {
+        assertThatThrownBy(() -> {
+            Long nonExistingAuthorId = 999L;
+            AuthorEntity authorToUpdate = TestDataUtil.updateTestAuthorEntity(nonExistingAuthorId);
+
+            underTest.fullUpdate(nonExistingAuthorId, authorToUpdate);
+        }).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Transactional
+    @Test
+    public void testThatPartialUpdateAuthorDoesNotUpdateWhenAllValuesOfRequestAreNull() {
+        AuthorEntity existingAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+
+        AuthorEntity result = underTest.partialUpdate(existingAuthor.getId(), new AuthorUpdateRequest());
+
+        assertThat(result).isEqualTo(existingAuthor);
+    }
+
+    @Transactional
+    @Test
+    public void testThatPartialUpdateAuthorUpdatesAuthorName() {
+        AuthorEntity existingAuthor = TestDataUtil.createTestAuthorEntity();
+
+        String newName = "Partial Updated Author Name";
+
+        AuthorUpdateRequest authorToUpdate = AuthorUpdateRequest.builder()
+                .name(newName)
+                .build();
+
+        AuthorEntity expectedAuthor = AuthorEntity.builder()
+                .name(newName)
+                .age(existingAuthor.getAge())
+                .description(existingAuthor.getDescription())
+                .image(existingAuthor.getImage())
+                .build();
+
+        assertThatAuthorPartialUpdateIsUpdated(
+                existingAuthor,
+                expectedAuthor,
+                authorToUpdate
+        );
+    }
+
+    @Transactional
+    @Test
+    public void testThatPartialUpdateAuthorUpdatesAuthorAge() {
+        AuthorEntity existingAuthor = TestDataUtil.createTestAuthorEntity();
+
+        Integer newAge = 50;
+
+        AuthorUpdateRequest authorToUpdate = AuthorUpdateRequest.builder()
+                .age(newAge)
+                .build();
+
+        AuthorEntity expectedAuthor = AuthorEntity.builder()
+                .name(existingAuthor.getName())
+                .age(newAge)
+                .description(existingAuthor.getDescription())
+                .image(existingAuthor.getImage())
+                .build();
+
+        assertThatAuthorPartialUpdateIsUpdated(
+                existingAuthor,
+                expectedAuthor,
+                authorToUpdate
+        );
+    }
+
+    @Transactional
+    @Test
+    public void testThatPartialUpdateAuthorUpdatesAuthorDescription() {
+        AuthorEntity existingAuthor = TestDataUtil.createTestAuthorEntity();
+
+        String newDescription = "Partial Updated Author Description";
+
+        AuthorUpdateRequest authorToUpdate = AuthorUpdateRequest.builder()
+                .description(newDescription)
+                .build();
+
+        AuthorEntity expectedAuthor = AuthorEntity.builder()
+                .name(existingAuthor.getName())
+                .age(existingAuthor.getAge())
+                .description(newDescription)
+                .image(existingAuthor.getImage())
+                .build();
+
+        assertThatAuthorPartialUpdateIsUpdated(
+                existingAuthor,
+                expectedAuthor,
+                authorToUpdate
+        );
+    }
+
+    @Transactional
+    @Test
+    public void testThatPartialUpdateAuthorUpdatesAuthorImage() {
+        AuthorEntity existingAuthor = TestDataUtil.createTestAuthorEntity();
+
+        String newImage = "partial-update-author-image.jpg";
+
+        AuthorUpdateRequest authorToUpdate = AuthorUpdateRequest.builder()
+                .image(newImage)
+                .build();
+
+        AuthorEntity expectedAuthor = AuthorEntity.builder()
+                .name(existingAuthor.getName())
+                .age(existingAuthor.getAge())
+                .description(existingAuthor.getDescription())
+                .image(newImage)
+                .build();
+
+        assertThatAuthorPartialUpdateIsUpdated(
+                existingAuthor,
+                expectedAuthor,
+                authorToUpdate
+        );
+    }
+
+    private void assertThatAuthorPartialUpdateIsUpdated(
+            AuthorEntity existingAuthor,
+            AuthorEntity expectedAuthor,
+            AuthorUpdateRequest authorToUpdate
+    ) {
+        // Save an existing Author
+        AuthorEntity savedExistingAuthor = authorRepository.save(existingAuthor);
+        Long existingAuthorId = savedExistingAuthor.getId();
+
+        // Update the Author
+        AuthorEntity result = underTest.partialUpdate(
+                existingAuthorId,
+                authorToUpdate
+        );
+
+        // Set up the expected Author
+        expectedAuthor.setId(existingAuthorId);
+
+        assertThat(result).isEqualTo(expectedAuthor);
+
+        AuthorEntity recalledAuthor = authorRepository.findById(existingAuthorId).orElse(null);
+        assertThat(recalledAuthor).isNotNull();
+        assertThat(recalledAuthor).isEqualTo(expectedAuthor);
     }
 }

@@ -230,4 +230,48 @@ public class AuthorControllerTest {
                 )
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
+
+    @Test
+    public void testThatPartialUpdateAuthorReturnsHTTP400WhenIllegalStateExceptionIsThrown() throws Exception {
+        when(authorService.partialUpdate(any(), any()))
+                .thenThrow(IllegalStateException.class);
+
+        AuthorDto authorToUpdate = TestDataUtil.partialUpdateTestAuthorDto(999L);
+        String content = objectMapper.writeValueAsString(authorToUpdate);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .patch(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(content)
+                )
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    public void testThatPartialUpdateAuthorReturnsHTTP200AndUpdatedAuthor() throws Exception {
+        when(authorService.partialUpdate(any(), any()))
+                .thenReturn(TestDataUtil.expectedPartialUpdatedTestAuthorEntity(999L));
+
+        AuthorDto authorToPartialUpdate = TestDataUtil.partialUpdateTestAuthorDto(999L);
+        String content = objectMapper.writeValueAsString(authorToPartialUpdate);
+
+        AuthorDto expected = TestDataUtil.expectedPartialUpdatedTestAuthorDto(999L);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .patch(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(content)
+                )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(objectMapper.writeValueAsString(expected)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(expected.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(expected.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(expected.getAge()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()));
+    }
 }

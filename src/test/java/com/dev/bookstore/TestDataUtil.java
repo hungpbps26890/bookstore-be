@@ -30,20 +30,36 @@ public class TestDataUtil {
     public static AuthorDto updateTestAuthorDto(Long id) {
         return AuthorDto.builder()
                 .id(id)
-                .name("Author Name")
+                .name("Updated Author Name")
                 .age(30)
-                .description("This is a description.")
-                .image("author-image.jpg")
+                .description("This is an updated description.")
+                .image("updated-author-image.jpg")
                 .build();
     }
 
     public static AuthorDto expectedUpdatedTestAuthorDto(Long id) {
         return AuthorDto.builder()
                 .id(id)
-                .name("Author Name")
+                .name("Updated Author Name")
                 .age(30)
-                .description("This is a description.")
-                .image("author-image.jpg")
+                .description("This is an updated description.")
+                .image("updated-author-image.jpg")
+                .build();
+    }
+
+    public static AuthorDto partialUpdateTestAuthorDto(Long id) {
+        return AuthorDto.builder()
+                .name("Partial Updated Author Name")
+                .build();
+    }
+
+    public static AuthorDto expectedPartialUpdatedTestAuthorDto(Long id) {
+        return AuthorDto.builder()
+                .id(id)
+                .name("Partial Updated Author Name")
+                .age(30)
+                .description("This is an updated description.")
+                .image("updated-author-image.jpg")
                 .build();
     }
 
@@ -70,7 +86,7 @@ public class TestDataUtil {
         return AuthorEntity.builder()
                 .id(existingAuthorId)
                 .name("Updated Author Name")
-                .age(60)
+                .age(30)
                 .description("This is an updated description.")
                 .image("updated-author-image.jpg")
                 .build();
@@ -80,7 +96,17 @@ public class TestDataUtil {
         return AuthorEntity.builder()
                 .id(existingAuthorId)
                 .name("Updated Author Name")
-                .age(60)
+                .age(30)
+                .description("This is an updated description.")
+                .image("updated-author-image.jpg")
+                .build();
+    }
+
+    public static AuthorEntity expectedPartialUpdatedTestAuthorEntity(Long id) {
+        return AuthorEntity.builder()
+                .id(id)
+                .name("Partial Updated Author Name")
+                .age(30)
                 .description("This is an updated description.")
                 .image("updated-author-image.jpg")
                 .build();
