@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -273,5 +275,18 @@ public class AuthorControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.age").value(expected.getAge()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()));
+    }
+
+    @Test
+    public void testThatDeleteAuthorReturnsHTTP204NoContentOnSuccessfulDelete() throws Exception {
+        doNothing().when(authorService).delete(any());
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .delete(AUTHORS_BASED_URL + "/999")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 }

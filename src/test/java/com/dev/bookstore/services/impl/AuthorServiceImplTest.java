@@ -265,4 +265,23 @@ public class AuthorServiceImplTest {
         assertThat(recalledAuthor).isNotNull();
         assertThat(recalledAuthor).isEqualTo(expectedAuthor);
     }
+
+    @Test
+    public void testThatDeleteDeletesAnExistingAuthorInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        Long existingAuthorId = savedAuthor.getId();
+
+        underTest.delete(existingAuthorId);
+
+        assertThat(authorRepository.existsById(existingAuthorId)).isFalse();
+    }
+
+    @Test
+    public void testThatDeleteDeletesAnNonExistingAuthorInTheDatabase() {
+        Long nonExistingAuthorId = 999L;
+
+        underTest.delete(nonExistingAuthorId);
+
+        assertThat(authorRepository.existsById(nonExistingAuthorId)).isFalse();
+    }
 }
