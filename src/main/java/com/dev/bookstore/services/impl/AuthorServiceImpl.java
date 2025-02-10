@@ -59,4 +59,9 @@ public class AuthorServiceImpl implements AuthorService {
             return authorRepository.save(existingAuthor);
         }).orElseThrow(() -> new IllegalStateException("Author not found"));
     }
+
+    @Override
+    public void delete(Long id) {
+        authorRepository.deleteById(id);
+    }
 }
