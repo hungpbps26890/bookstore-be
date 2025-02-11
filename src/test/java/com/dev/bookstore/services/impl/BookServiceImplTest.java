@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 import static com.dev.bookstore.TestDataUtil.BOOK_ISBN;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -79,5 +81,27 @@ public class BookServiceImplTest {
 
         assertThat(updatedBookResponse.isCreate()).isFalse();
         assertThat(recalledBook).isEqualTo(updatedBookResponse.getBook());
+    }
+
+    @Test
+    public void testThatListReturnsAnEmptyListWhenNoBookInTheDatabase() {
+        List<BookEntity> result = underTest.list();
+
+        Assertions.assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void testThatListReturnsBooksWhenBooksInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        List<BookEntity> result = underTest.list();
+
+        Assertions.assertThat(result).isNotEmpty();
+        Assertions.assertThat(result).hasSize(1);
+        Assertions.assertThat(result.get(0)).isEqualTo(savedBook);
     }
 }

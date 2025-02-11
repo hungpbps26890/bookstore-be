@@ -6,6 +6,7 @@ import com.dev.bookstore.domain.dto.BookSummaryDto;
 import com.dev.bookstore.domain.entities.AuthorEntity;
 import com.dev.bookstore.domain.entities.BookEntity;
 import com.dev.bookstore.domain.response.BookResponse;
+import com.dev.bookstore.mappers.impl.BookMapper;
 import com.dev.bookstore.services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import java.util.List;
 
 import static com.dev.bookstore.TestDataUtil.BOOK_ISBN;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,11 +41,14 @@ public class BookControllerTest {
 
     private final ObjectMapper objectMapper;
 
+    private final BookMapper bookMapper;
+
     @Autowired
-    public BookControllerTest(MockMvc mockMvc, BookService bookService, ObjectMapper objectMapper) {
+    public BookControllerTest(MockMvc mockMvc, BookService bookService, ObjectMapper objectMapper, BookMapper bookMapper) {
         this.mockMvc = mockMvc;
         this.bookService = bookService;
         this.objectMapper = objectMapper;
+        this.bookMapper = bookMapper;
     }
 
     @Test
@@ -97,5 +103,32 @@ public class BookControllerTest {
         ).andExpect(
                 MockMvcResultMatchers.status().is(statusCode)
         );
+    }
+
+    @Test
+    public void testThatReadManyBooksReturnsAListOfBooks() throws Exception {
+        AuthorEntity author = TestDataUtil.testAuthorEntity(1L);
+        BookEntity book = TestDataUtil.testBookEntity(BOOK_ISBN, author);
+
+        when(bookService.list())
+                .thenReturn(List.of(book));
+
+        BookSummaryDto expected = bookMapper.toBookSummaryDto(book);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(BOOKS_BASED_URL)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                ).andExpect(
+                        MockMvcResultMatchers.status().isOk()
+                )
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].isbn").value(expected.getIsbn()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value(expected.getTitle()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].image").value(expected.getImage()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.id").value(author.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.name").value(author.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.image").value(author.getImage()));
     }
 }
