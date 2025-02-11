@@ -171,4 +171,44 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.name").value(author.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.image").value(author.getImage()));
     }
+
+    @Test
+    public void testThatReadOneBookReturnsHTTP404WhenBookNotFound() throws Exception {
+        when(bookService.get(any())).thenThrow(IllegalStateException.class);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .get(BOOKS_BASED_URL + "/" + BOOK_ISBN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNotFound()
+        );
+    }
+
+    @Test
+    public void testThatReadOneBookReturnsBookAndHTTP200WhenBookFound() throws Exception {
+        AuthorEntity author = TestDataUtil.testAuthorEntity(1L);
+        BookEntity book = TestDataUtil.testBookEntity(BOOK_ISBN, author);
+
+        when(bookService.get(any())).thenReturn(book);
+
+        BookSummaryDto expected = bookMapper.toBookSummaryDto(book);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(BOOKS_BASED_URL + "/" + BOOK_ISBN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                ).andExpect(
+                        MockMvcResultMatchers.status().isOk()
+                )
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(expected.getIsbn()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(expected.getTitle()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.author.id").value(author.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.author.name").value(author.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.author.image").value(author.getImage()));
+    }
 }

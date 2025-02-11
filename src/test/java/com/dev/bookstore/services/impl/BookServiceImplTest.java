@@ -133,4 +133,25 @@ public class BookServiceImplTest {
         Assertions.assertThat(result).isNotEmpty();
         Assertions.assertThat(result.get(0)).isEqualTo(savedBook);
     }
+
+    @Test
+    public void testThatGetThrowsIllegalStateExceptionWhenBookNotFoundInTheDatabase() {
+        Assertions.assertThatThrownBy(() -> {
+            underTest.get(BOOK_ISBN);
+        }).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void testThatGetReturnsBookWhenTheBookIsFoundInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        BookEntity result = underTest.get(BOOK_ISBN);
+
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(savedBook);
+    }
 }
