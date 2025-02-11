@@ -50,4 +50,10 @@ public class BookServiceImpl implements BookService {
                 ? bookRepository.findByAuthorId(authorId)
                 : bookRepository.findAll();
     }
+
+    @Override
+    public BookEntity get(String isbn) {
+        return bookRepository.findById(isbn)
+                .orElseThrow(() -> new IllegalStateException("Book not found"));
+    }
 }

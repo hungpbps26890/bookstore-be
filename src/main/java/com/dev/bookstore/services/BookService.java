@@ -11,4 +11,6 @@ public interface BookService {
     BookResponse createUpdate(String isbn, BookSummary bookSummary);
 
     List<BookEntity> list(Long authorId);
+
+    BookEntity get(String isbn);
 }
