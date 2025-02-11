@@ -5,6 +5,7 @@ import com.dev.bookstore.domain.entities.BookEntity;
 import com.dev.bookstore.domain.response.BookResponse;
 import com.dev.bookstore.mappers.impl.BookMapper;
 import com.dev.bookstore.services.BookService;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +42,8 @@ public class BookController {
     }
 
     @GetMapping
-    public List<BookSummaryDto> readManyBooks() {
-        List<BookEntity> books = bookService.list();
+    public List<BookSummaryDto> readManyBooks(@Nullable @RequestParam("author") Long authorId) {
+        List<BookEntity> books = bookService.list(authorId);
 
         return books.stream()
                 .map(bookMapper::toBookSummaryDto)
