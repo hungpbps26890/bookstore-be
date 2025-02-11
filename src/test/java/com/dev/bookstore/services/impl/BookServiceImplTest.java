@@ -223,4 +223,28 @@ public class BookServiceImplTest {
 
         assertThat(result.getImage()).isEqualTo(newTestBookImage);
     }
+
+    @Test
+    public void testThatDeleteSuccessfullyDeletesAnExistingBookInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        underTest.delete(BOOK_ISBN);
+
+        BookEntity result = bookRepository.findById(BOOK_ISBN).orElse(null);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    public void testThatDeleteSuccessfullyDeletesABookDoesNotExistInTheDatabase() {
+        underTest.delete(BOOK_ISBN);
+
+        BookEntity result = bookRepository.findById(BOOK_ISBN).orElse(null);
+
+        assertThat(result).isNull();
+    }
 }

@@ -12,6 +12,7 @@ import com.dev.bookstore.mappers.impl.BookMapper;
 import com.dev.bookstore.services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,6 +28,7 @@ import java.util.List;
 
 import static com.dev.bookstore.TestDataUtil.BOOK_ISBN;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -274,5 +276,19 @@ public class BookControllerTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.author.id").value(author.getId()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.author.name").value(author.getName()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.author.image").value(author.getImage()));
+    }
+
+    @Test
+    public void testThatDeleteBookReturnsHTTP204WhenDeleteSuccessfully() throws Exception {
+        doNothing().when(bookService).delete(any());
+
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .delete(BOOKS_BASED_URL + "/" + BOOK_ISBN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isNoContent()
+        );
     }
 }
