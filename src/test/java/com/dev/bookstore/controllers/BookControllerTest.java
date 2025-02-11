@@ -110,7 +110,7 @@ public class BookControllerTest {
         AuthorEntity author = TestDataUtil.testAuthorEntity(1L);
         BookEntity book = TestDataUtil.testBookEntity(BOOK_ISBN, author);
 
-        when(bookService.list())
+        when(bookService.list(null))
                 .thenReturn(List.of(book));
 
         BookSummaryDto expected = bookMapper.toBookSummaryDto(book);
@@ -124,6 +124,46 @@ public class BookControllerTest {
                         MockMvcResultMatchers.status().isOk()
                 )
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].isbn").value(expected.getIsbn()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value(expected.getTitle()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].image").value(expected.getImage()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.id").value(author.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.name").value(author.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].author.image").value(author.getImage()));
+    }
+
+    @Test
+    public void testThatReadManyBooksReturnsNoBookWhenNotMatchTheAuthorId() throws Exception {
+        when(bookService.list(any())).thenReturn(List.of());
+
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .get(BOOKS_BASED_URL + "?author=999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpect(
+                MockMvcResultMatchers.status().isOk()
+        ).andExpect(MockMvcResultMatchers.content().json("[]"));
+    }
+
+    @Test
+    public void testThatReadManyBooksReturnBooksOfTheAuthorWhenMatchTheAuthorId() throws Exception {
+        AuthorEntity author = TestDataUtil.testAuthorEntity(1L);
+        BookEntity book = TestDataUtil.testBookEntity(BOOK_ISBN, author);
+
+        when(bookService.list(any()))
+                .thenReturn(List.of(book));
+
+        BookSummaryDto expected = bookMapper.toBookSummaryDto(book);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .get(BOOKS_BASED_URL + "?author=1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                ).andExpect(
+                        MockMvcResultMatchers.status().isOk()
+                ).andExpect(MockMvcResultMatchers.jsonPath("$[0].isbn").value(expected.getIsbn()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].title").value(expected.getTitle()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$[0].image").value(expected.getImage()))

@@ -85,7 +85,7 @@ public class BookServiceImplTest {
 
     @Test
     public void testThatListReturnsAnEmptyListWhenNoBookInTheDatabase() {
-        List<BookEntity> result = underTest.list();
+        List<BookEntity> result = underTest.list(null);
 
         Assertions.assertThat(result).isEmpty();
     }
@@ -98,10 +98,39 @@ public class BookServiceImplTest {
         BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
         assertThat(savedBook).isNotNull();
 
-        List<BookEntity> result = underTest.list();
+        List<BookEntity> result = underTest.list(null);
 
         Assertions.assertThat(result).isNotEmpty();
         Assertions.assertThat(result).hasSize(1);
+        Assertions.assertThat(result.get(0)).isEqualTo(savedBook);
+    }
+
+    @Test
+    public void testThatListReturnsNoBookWhenTheAuthorIdDoesNotMatch() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        List<BookEntity> result = underTest.list(999L);
+
+        Assertions.assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void testThatListReturnsNoBookWhenTheAuthorIdDoesMatch() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        Long authorId = savedAuthor.getId();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        List<BookEntity> result = underTest.list(authorId);
+
+        Assertions.assertThat(result).isNotEmpty();
         Assertions.assertThat(result.get(0)).isEqualTo(savedBook);
     }
 }
