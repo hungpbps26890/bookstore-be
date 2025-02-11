@@ -1,6 +1,7 @@
 package com.dev.bookstore.controllers;
 
 import com.dev.bookstore.domain.dto.BookSummaryDto;
+import com.dev.bookstore.domain.dto.BookUpdateRequestDto;
 import com.dev.bookstore.domain.entities.BookEntity;
 import com.dev.bookstore.domain.response.BookResponse;
 import com.dev.bookstore.mappers.impl.BookMapper;
@@ -57,6 +58,19 @@ public class BookController {
             return new ResponseEntity<>(bookMapper.toBookSummaryDto(foundBook), HttpStatus.OK);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PatchMapping(path = "/{isbn}")
+    public ResponseEntity<BookSummaryDto> partialUpdateBook(
+            @PathVariable("isbn") String isbn,
+            @RequestBody BookUpdateRequestDto bookUpdateRequestDto
+    ) {
+        try {
+            BookEntity updatedBook = bookService.partialUpdate(isbn, bookMapper.toBookUpdateRequest(bookUpdateRequestDto));
+            return new ResponseEntity<>(bookMapper.toBookSummaryDto(updatedBook), HttpStatus.OK);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }
