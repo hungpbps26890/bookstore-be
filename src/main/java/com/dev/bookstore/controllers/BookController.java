@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping(path = "/books")
 @RequiredArgsConstructor
@@ -36,5 +38,14 @@ public class BookController {
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping
+    public List<BookSummaryDto> readManyBooks() {
+        List<BookEntity> books = bookService.list();
+
+        return books.stream()
+                .map(bookMapper::toBookSummaryDto)
+                .toList();
     }
 }
