@@ -5,6 +5,7 @@ import com.dev.bookstore.domain.entities.AuthorEntity;
 import com.dev.bookstore.domain.entities.BookEntity;
 import com.dev.bookstore.domain.requests.AuthorSummary;
 import com.dev.bookstore.domain.requests.BookSummary;
+import com.dev.bookstore.domain.requests.BookUpdateRequest;
 import com.dev.bookstore.domain.response.BookResponse;
 import com.dev.bookstore.repositories.AuthorRepository;
 import com.dev.bookstore.repositories.BookRepository;
@@ -153,5 +154,73 @@ public class BookServiceImplTest {
 
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(savedBook);
+    }
+
+    @Test
+    public void testThatPartialUpdateThrowsIllegalStateExceptionWhenTheBookNotFoundInTheDatabase() {
+        BookUpdateRequest bookUpdateRequest = BookUpdateRequest.builder()
+                .title("New Test Book Title")
+                .build();
+
+        Assertions.assertThatThrownBy(() -> {
+            underTest.partialUpdate(BOOK_ISBN, bookUpdateRequest);
+        }).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    public void testThatPartialUpdatesTheTitleOfAnExistingBookInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        String newTestBookTitle = "New Test Book Title";
+
+        BookUpdateRequest bookUpdateRequest = BookUpdateRequest.builder()
+                .title(newTestBookTitle)
+                .build();
+
+        BookEntity result = underTest.partialUpdate(BOOK_ISBN, bookUpdateRequest);
+
+        assertThat(result.getTitle()).isEqualTo(newTestBookTitle);
+    }
+
+    @Test
+    public void testThatPartialUpdatesTheDescriptionOfAnExistingBookInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        String newTestBookDescription = "New Test Book Description.";
+
+        BookUpdateRequest bookUpdateRequest = BookUpdateRequest.builder()
+                .description(newTestBookDescription)
+                .build();
+
+        BookEntity result = underTest.partialUpdate(BOOK_ISBN, bookUpdateRequest);
+
+        assertThat(result.getDescription()).isEqualTo(newTestBookDescription);
+    }
+
+    @Test
+    public void testThatPartialUpdatesTheImageOfAnExistingBookInTheDatabase() {
+        AuthorEntity savedAuthor = authorRepository.save(TestDataUtil.createTestAuthorEntity());
+        assertThat(savedAuthor).isNotNull();
+
+        BookEntity savedBook = bookRepository.save(TestDataUtil.testBookEntity(BOOK_ISBN, savedAuthor));
+        assertThat(savedBook).isNotNull();
+
+        String newTestBookImage = "new-test-book-image.jpg";
+
+        BookUpdateRequest bookUpdateRequest = BookUpdateRequest.builder()
+                .image(newTestBookImage)
+                .build();
+
+        BookEntity result = underTest.partialUpdate(BOOK_ISBN, bookUpdateRequest);
+
+        assertThat(result.getImage()).isEqualTo(newTestBookImage);
     }
 }

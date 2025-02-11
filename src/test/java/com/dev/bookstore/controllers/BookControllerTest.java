@@ -3,8 +3,10 @@ package com.dev.bookstore.controllers;
 import com.dev.bookstore.TestDataUtil;
 import com.dev.bookstore.domain.dto.AuthorSummaryDto;
 import com.dev.bookstore.domain.dto.BookSummaryDto;
+import com.dev.bookstore.domain.dto.BookUpdateRequestDto;
 import com.dev.bookstore.domain.entities.AuthorEntity;
 import com.dev.bookstore.domain.entities.BookEntity;
+import com.dev.bookstore.domain.requests.BookUpdateRequest;
 import com.dev.bookstore.domain.response.BookResponse;
 import com.dev.bookstore.mappers.impl.BookMapper;
 import com.dev.bookstore.services.BookService;
@@ -204,6 +206,68 @@ public class BookControllerTest {
                         MockMvcResultMatchers.status().isOk()
                 )
                 .andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(expected.getIsbn()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(expected.getTitle()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.author.id").value(author.getId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.author.name").value(author.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.author.image").value(author.getImage()));
+    }
+
+    @Test
+    public void testThatPartialUpdateBookReturnsHTTP400WhenIllegalStateExceptionIsThrown() throws Exception {
+        BookUpdateRequestDto bookUpdateRequestDto = BookUpdateRequestDto.builder()
+                .title("New Test Book Title")
+                .build();
+
+        BookUpdateRequest bookUpdateRequest = bookMapper.toBookUpdateRequest(bookUpdateRequestDto);
+
+        when(bookService.partialUpdate(BOOK_ISBN, bookUpdateRequest))
+                .thenThrow(IllegalStateException.class);
+
+        String content = objectMapper.writeValueAsString(bookUpdateRequestDto);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders
+                        .patch(BOOKS_BASED_URL + "/" + BOOK_ISBN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(content)
+        ).andExpect(
+                MockMvcResultMatchers.status().isBadRequest()
+        );
+    }
+
+    @Test
+    public void testThatPartialUpdateBookReturnsHTTP200AndBookWhenUpdateSuccessfully() throws Exception {
+        String newTestBookTitle = "New Test Book Title";
+
+        BookUpdateRequestDto bookUpdateRequestDto = BookUpdateRequestDto.builder()
+                .title(newTestBookTitle)
+                .build();
+
+        BookUpdateRequest bookUpdateRequest = bookMapper.toBookUpdateRequest(bookUpdateRequestDto);
+
+        AuthorEntity author = TestDataUtil.testAuthorEntity(1L);
+        BookEntity updatedBook = TestDataUtil.testBookEntity(BOOK_ISBN, author);
+        updatedBook.setTitle(newTestBookTitle);
+
+        when(bookService.partialUpdate(BOOK_ISBN, bookUpdateRequest))
+                .thenReturn(updatedBook);
+
+        String content = objectMapper.writeValueAsString(bookUpdateRequestDto);
+
+        BookSummaryDto expected = bookMapper.toBookSummaryDto(updatedBook);
+
+        mockMvc.perform(
+                        MockMvcRequestBuilders
+                                .patch(BOOKS_BASED_URL + "/" + BOOK_ISBN)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content(content)
+                ).andExpect(
+                        MockMvcResultMatchers.status().isOk()
+                ).andExpect(MockMvcResultMatchers.jsonPath("$.isbn").value(expected.getIsbn()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(expected.getTitle()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.description").value(expected.getDescription()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.image").value(expected.getImage()))
