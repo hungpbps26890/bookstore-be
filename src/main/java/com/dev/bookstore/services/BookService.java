@@ -16,4 +16,6 @@ public interface BookService {
     BookEntity get(String isbn);
 
     BookEntity partialUpdate(String isbn, BookUpdateRequest bookUpdateRequest);
+
+    void delete(String isbn);
 }
